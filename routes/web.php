@@ -8,6 +8,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\PosController;
+use App\Http\Controllers\DashboardController;
 
 
 Route::get('/login', [LoginController::class, 'create'])
@@ -25,7 +26,6 @@ Route::post('/logout', [LoginController::class, 'destroy'])
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('categories', CategoryController::class);
     Route::resource('products', ProductController::class);
-    Route::get('/reports/sales', [ReportController::class, 'sales'])->name('report.sales');
 
     Route::get('/users', function () {
         $users = User::all();
@@ -33,9 +33,16 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     })->name('users.index');
 });
 
- Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/reports/sales', [ReportController::class, 'sales'])->name('report.sales');
+    Route::get('/reports/sales/export', [ReportController::class, 'export'])->name('report.export');
+});
+
+
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth'])
+    ->name('dashboard');
 
 Route::middleware(['auth', 'role:admin,kasir'])->group(function () {
     Route::get('/pos', [PosController::class, 'index'])->name('pos.index');
